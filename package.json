@@ -1,0 +1,16 @@
+{
+  "name": "treasury-subgraph-fetch",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@olympusdao/treasury-subgraph-client": "^1.4.0",
+    "cross-fetch": "^4.0.0",
+    "date-fns": "^3.6.0"
+  }
+}

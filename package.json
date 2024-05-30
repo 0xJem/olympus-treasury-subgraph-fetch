@@ -3,7 +3,8 @@
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "openapi-typescript": "^6.7.6"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -11,6 +12,10 @@
   "dependencies": {
     "@olympusdao/treasury-subgraph-client": "^1.4.0",
     "cross-fetch": "^4.0.0",
-    "date-fns": "^3.6.0"
+    "date-fns": "^3.6.0",
+    "openapi-fetch": "^0.9.7"
+  },
+  "scripts": {
+    "codegen": "bun openapi-typescript https://raw.githubusercontent.com/DefiLlama/defillama-app/main/src/docs/spec.yaml --output src/defillama/api.ts"
   }
 }

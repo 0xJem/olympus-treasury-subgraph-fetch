@@ -53,7 +53,7 @@ export const getTokenRecords = async (
   return records;
 };
 
-export const getMetrics = async (
+export const getTreasurySubgraphMetrics = async (
   startDate: string,
 ): Promise<Metric[]> => {
   const response = await getSubgraphClient().query({

@@ -1,5 +1,6 @@
 import { addDays, formatDate } from "date-fns";
-import { getMetrics, getTokenRecords, type Metric } from "./query";
+import { getTreasurySubgraphMetrics, getTokenRecords, type Metric } from "./treasurySubgraph";
+import { getTokenPrices } from "./defiLlama";
 
 // Tokens to get values for
 type TokenData = {
@@ -15,14 +16,14 @@ type OutputData = {
 
 const TOKENS: TokenData[] = [
   {
-    token: "0x6b175474e89094c44da98b954eedeac495271d0f",
-    observations: 30, // 90 / 3
+    token: "coingecko:dai",
+    observations: 90,
     outputPrefix: "dai",
     decimals: 18,
   },
   {
-    token: "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5",
-    observations: 30, // 90 / 3
+    token: "coingecko:olympus",
+    observations: 90,
     outputPrefix: "ohm",
     decimals: 9,
   }
@@ -53,37 +54,45 @@ const main = async () => {
   const outputData: OutputData = {};
 
   // Get the tokens and metrics
-  console.log("Getting data...");
-  const tokenRecords = await getTokenRecords(startDateFormatted);
+  const tokenRecords = await getTokenPrices(TOKENS.map(token => token.token), 90);
+  console.log(`Received ${Object.keys(tokenRecords).length} token records`);
 
   // Iterate over tokens and extract prices
   TOKENS.forEach(token => {
-    // Extract the matching TokenRecords
-    const filteredTokenRecords = tokenRecords.filter(record => record.tokenAddress.toLowerCase() === token.token.toLowerCase());
+    console.log(`Processing token ${token.outputPrefix}...`);
+
+    // Extract the matching records
+    const record = tokenRecords[token.token];
 
     // Check that the required number of observations are available
-    if (filteredTokenRecords.length < token.observations) {
-      throw new Error(`Insufficient observations for token ${token.outputPrefix}. Required: ${token.observations}, Available: ${filteredTokenRecords.length}`);
+    if (record.prices.length < token.observations) {
+      throw new Error(`Insufficient observations for token ${token.outputPrefix}. Required: ${token.observations}, Available: ${record.prices.length}`);
     }
 
+    // Order the prices in ascending order
+    record.prices.sort((a, b) => a.timestamp - b.timestamp);
+
     // Limit to the required number of observations
-    const limitedTokenRecords = filteredTokenRecords.slice(-token.observations);
+    const limitedPrices = record.prices.slice(-token.observations);
 
     // Extract the token prices
-    const prices: number[] = limitedTokenRecords.map(record => {
+    const prices: number[] = limitedPrices.map(record => {
       // Shift the decimal point
-      const rate = Number(record.rate) * 10 ** token.decimals;
+      const rate = Number(record.price) * 10 ** token.decimals;
 
-      // 3 observations per day
-      return [rate, rate, rate];
-    }).flat(1);
+      return rate;
+    });
+
+    const latestObsTimestamp = Number(limitedPrices.slice(-1)[0].timestamp);
+    console.log(`Latest observation timestamp: ${latestObsTimestamp}`);
 
     // Add to the output data
-    outputData[`${token.outputPrefix}LastObsTime`] = Number(limitedTokenRecords.slice(-1)[0].timestamp);
+    outputData[`${token.outputPrefix}LastObsTime`] = latestObsTimestamp;
     outputData[`${token.outputPrefix}Obs`] = prices;
   });
 
-  const metricRecords = await getMetrics(formatDate(startDate, "yyyy-MM-dd"));
+  console.log("Getting metric data...");
+  const metricRecords = await getTreasurySubgraphMetrics(formatDate(startDate, "yyyy-MM-dd"));
   console.log(`Received ${metricRecords.length} metric records`);
 
   // Iterate over metrics and extract values

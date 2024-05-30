@@ -7,25 +7,24 @@ type TokenData = {
   token: string;
   observations: number;
   outputPrefix: string;
-  decimals: number;
 }
 
 type OutputData = {
   [key: string]: number | number[];
 }
 
+const OUTPUT_DECIMALS = 18;
+
 const TOKENS: TokenData[] = [
   {
     token: "coingecko:dai",
     observations: 90,
-    outputPrefix: "dai",
-    decimals: 18,
+    outputPrefix: "dai"
   },
   {
     token: "coingecko:olympus",
     observations: 90,
-    outputPrefix: "ohm",
-    decimals: 9,
+    outputPrefix: "ohm"
   }
 ];
 
@@ -78,7 +77,7 @@ const main = async () => {
     // Extract the token prices
     const prices: number[] = limitedPrices.map(record => {
       // Shift the decimal point
-      const rate = Number(record.price) * 10 ** token.decimals;
+      const rate = Number(record.price) * 10 ** OUTPUT_DECIMALS;
 
       return rate;
     });

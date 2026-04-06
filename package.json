@@ -17,7 +17,7 @@
   },
   "scripts": {
     "codegen": "bun openapi-typescript https://raw.githubusercontent.com/DefiLlama/defillama-app/main/src/docs/spec.yaml --output src/defillama/api.ts",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow@1.2.2 pnpm"
   },
   "packageManager": "pnpm@10.33.0",
   "engines": {
